@@ -21,6 +21,7 @@ serde_json = "1.0.6"
 time = "0.1.38"
 tree_magic = "0.2.0"
 url = "1.6.0"
+libappindicator = "0.3.0"
 
 [dependencies.cairo-rs]
 features = ["png"]

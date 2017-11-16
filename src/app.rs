@@ -5,6 +5,7 @@ extern crate chrono;
 extern crate gdk;
 extern crate notify_rust;
 extern crate pango;
+extern crate libappindicator;
 
 use self::notify_rust::Notification;
 
@@ -28,6 +29,7 @@ use glib;
 use gio;
 use self::gdk_pixbuf::Pixbuf;
 use self::gtk::prelude::*;
+use self::libappindicator::{AppIndicator, AppIndicatorStatus};
 
 use backend::Backend;
 use backend::BKCommand;
@@ -1544,15 +1546,34 @@ impl App {
             .get_object("main_window")
             .expect("Couldn't find main_window in ui file.");
 
+        let op = self.op.clone();
+
+        let mut app_indicator = AppIndicator::new("fractal", "res/fractal.svg");
+        app_indicator.set_status(AppIndicatorStatus::APP_INDICATOR_STATUS_ACTIVE);
+        app_indicator.set_icon_full("res/fractal.svg","fractal");
+
+        let mut indicator_menu = gtk::Menu::new();
+        let indicicator_quit = gtk::ImageMenuItem::new_from_stock("Quit", None);
+
+        indicicator_quit.connect_activate(move |_| {
+            op.lock().unwrap().quit();
+            Inhibit(false);
+        });
+        indicator_menu.append(&indicicator_quit);
+        app_indicator.set_menu(&mut indicator_menu);
+        indicator_menu.show_all();
+
         window.set_title("Fractal");
         let pxbf = Pixbuf::new_from_resource("/org/gnome/fractal/org.gnome.Fractal.svg").unwrap();
         window.set_icon(&pxbf);
         window.show_all();
 
-        let op = self.op.clone();
+        let window_hide = window.clone();
         window.connect_delete_event(move |_, _| {
-            op.lock().unwrap().quit();
-            Inhibit(false)
+            // op.lock().unwrap().quit();
+            // Inhibit(false)
+            window_hide.set_visible(false);
+            Inhibit(true)
         });
 
         let op = self.op.clone();
