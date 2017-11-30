@@ -1548,33 +1548,38 @@ impl App {
 
         let op = self.op.clone();
 
-        let mut app_indicator = AppIndicator::new("fractal", "res/fractal.svg");
-        app_indicator.set_status(AppIndicatorStatus::APP_INDICATOR_STATUS_ACTIVE);
-        app_indicator.set_icon_full("res/fractal.svg","fractal");
-
-        let mut indicator_menu = gtk::Menu::new();
-        let indicicator_quit = gtk::ImageMenuItem::new_from_stock("Quit", None);
-
-        indicicator_quit.connect_activate(move |_| {
-            op.lock().unwrap().quit();
-            Inhibit(false);
-        });
-        indicator_menu.append(&indicicator_quit);
-        app_indicator.set_menu(&mut indicator_menu);
-        indicator_menu.show_all();
-
         window.set_title("Fractal");
         let pxbf = Pixbuf::new_from_resource("/org/gnome/fractal/org.gnome.Fractal.svg").unwrap();
         window.set_icon(&pxbf);
         window.show_all();
 
         let window_hide = window.clone();
-        window.connect_delete_event(move |_, _| {
-            // op.lock().unwrap().quit();
-            // Inhibit(false)
+        window.clone().connect_delete_event(move |_, _| {
             window_hide.set_visible(false);
             Inhibit(true)
         });
+
+        let mut app_indicator = AppIndicator::new("Fractal", "res/org.gnome.Fractal.svg");
+        app_indicator.set_status(AppIndicatorStatus::APP_INDICATOR_STATUS_ACTIVE);
+        app_indicator.set_icon_full("res/org.gnome.Fractal.svg","Fractal");
+
+        let mut indicator_menu = gtk::Menu::new();
+        let indicicator_quit = gtk::ImageMenuItem::new_from_stock("Quit", None);
+        let indicator_show = gtk::ImageMenuItem::new_with_label("Show Fractal");
+
+        indicicator_quit.connect_activate(move |_| {
+            op.lock().unwrap().quit();
+            Inhibit(false);
+        });
+
+        indicator_show.connect_activate(move |_| {
+            window.show_all();
+        });
+
+        indicator_menu.append(&indicicator_quit);
+        indicator_menu.append(&indicator_show);
+        app_indicator.set_menu(&mut indicator_menu);
+        indicator_menu.show_all();
 
         let op = self.op.clone();
         let chat: gtk::Widget = self.gtk_builder
